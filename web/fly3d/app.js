@@ -23,6 +23,9 @@ const LEVELS = [["escape", "Escape", "#ffd84f"], ["chase", "Chase female", "#ff6
   ["feeding", "Eating", "#ffaa46"], ["smell", "Smell", "#be96ff"], ["flight", "Wing power", "#50c8ff"]];
 
 let S = null, W = [40, 40], tool = "food", chase = true;
+// ?cam=wide: follow the fly from further back and higher (shows the whole scene)
+const WIDE = new URLSearchParams(location.search).get("cam") === "wide";
+const CAM_BACK = WIDE ? 13 : 7, CAM_UP = WIDE ? 6.5 : 3.2;
 
 // ------------------------------------------------------------------ 3D world
 const canvas = $("scene");
@@ -397,7 +400,7 @@ function animate() {
   }
   if (chase) {
     const back = new THREE.Vector3(-Math.cos(fly.rotation.y), 0, Math.sin(fly.rotation.y));
-    const want = fly.position.clone().addScaledVector(back, 7).add(new THREE.Vector3(0, 3.2, 0));
+    const want = fly.position.clone().addScaledVector(back, CAM_BACK).add(new THREE.Vector3(0, CAM_UP, 0));
     want.y = Math.min(Math.max(want.y, 0.8), BOX_H - 0.6);
     want.x = Math.min(Math.max(want.x, -19.5), 19.5); want.z = Math.min(Math.max(want.z, -19.5), 19.5);
     camera.position.lerp(want, 1 - Math.exp(-dt * 3));

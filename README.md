@@ -8,9 +8,7 @@
 | 🌍 **Fly World** | `python -m flypac.flyworld_game --demo` | you place food, a female fly and predators; remove brain circuits and injure the brain live |
 | ✈️ **Fly 3D** | `python -m flypac.fly3d_server --demo` | the fly flies in a 3D room in your browser, with a rotatable 3D brain |
 
-![Fly World: the arena on the left, the live brain and brain-control panel on the right](docs/flyworld.png)
-
-![Fly-Pacman: the maze on the left, the fly's brain lighting up in the middle, its eyes and escape reflex on the right](docs/screenshot.png)
+![Fly 3D: the fly flying in a closed room while a dragonfly-like predator chases it, with the live 3D brain and brain-control panel on the right](docs/fly3d.png)
 
 *This project grew out of [Fly-Pacman](https://github.com/rev4n7/fly-pacman). Everything below starts with Fly-Pacman and then covers the new worlds.*
 
