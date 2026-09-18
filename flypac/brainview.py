@@ -24,7 +24,13 @@ GROUP_COLORS = {
     "middle_gf": (255, 190, 90),
     "middle_feedback+": (255, 190, 90),
     "middle_feedback-": (100, 150, 255),
+    # Fly World circuits
+    "sense_touch": (255, 120, 200), "relay_vab3": (255, 120, 200), "court_p1": (255, 90, 170),
+    "middle_court": (255, 150, 210), "out_song": (255, 60, 150),
+    "sense_smell": (190, 150, 255), "smell_pn": (190, 150, 255),
+    "sense_taste": (255, 200, 80), "middle_taste": (255, 210, 110), "out_feed": (255, 230, 60),
 }
+DEFAULT_COLOR = (200, 200, 200)
 RATE_REF = 30.0     # Hz that counts as "fully lit" for one neuron
 GLOW_GAIN = 0.25    # tone-mapping strength (higher saturates the centre to white)
 WEIGHT_POW = 0.7    # footprint softening: 1 = only dense synapse clusters glow, 0.5 = whole arbor
@@ -35,13 +41,13 @@ HISTORY = 300       # frames of trace (6 s at 50 fps)
 
 
 class BrainView:
-    def __init__(self, brain, pygame, scale=2.1):
+    def __init__(self, brain, pygame, scale=2.1, footprints=None):
         self.pg, self.brain, self.scale = pygame, brain, scale
         meta = json.loads((C.DATA_DIR / "anatomy_meta.json").read_text())
         self.W, self.H = meta["width"], meta["height"]
         self.labels = meta["labels"]
         masks = np.load(C.DATA_DIR / "anatomy_masks.npz")
-        fp = pd.read_csv(C.DATA_DIR / "anatomy_footprints.csv")
+        fp = pd.read_csv(footprints or C.DATA_DIR / "anatomy_footprints.csv")
         n = brain.neurons
 
         # mirrored right-ear cells reuse their left-ear source footprint, reflected at the midline
@@ -64,12 +70,13 @@ class BrainView:
         roles = n.role.to_numpy().astype(object)
         sign = n.sign.to_numpy()
         keys = np.where(roles == "middle_feedback", np.where(sign < 0, "middle_feedback-", "middle_feedback+"), roles)
-        rgb = np.array([GROUP_COLORS[k] for k in keys], float) / 255.0
+        rgb = np.array([GROUP_COLORS.get(k, DEFAULT_COLOR) for k in keys], float) / 255.0
         rgb *= np.array([GROUP_BRIGHTNESS.get(k, 1.0) for k in keys])[:, None]
         shape = (self.H * self.W, brain.N)
         self.F = [sparse.csr_matrix((weight * rgb[col, ch], (pix, col)), shape=shape) for ch in range(3)]
         n_pix = self.H * self.W
         self.F_all = sparse.vstack(self.F).tocsr()   # one multiply for all three colour channels
+        self.F_mono = sparse.csr_matrix((weight, (pix, col)), shape=shape)   # footprint only, for overlays
 
         # static base: real silhouettes + faint map of all simulated neurons
         base = np.zeros((self.H, self.W, 3))

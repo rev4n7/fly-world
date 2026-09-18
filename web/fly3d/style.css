@@ -1,0 +1,59 @@
+:root {
+  --bg: #0b0c14; --panel: #12131f; --line: #262a3d; --text: #e3e5f0; --dim: #8a8ea8;
+  --red: #ff5a5a; --gold: #ffd84f; --pink: #ff6ebe; --orange: #ffaa46; --violet: #be96ff; --mint: #78ffc8;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+  font: 14px/1.35 ui-monospace, Consolas, "DejaVu Sans Mono", monospace; overflow: hidden; }
+#app { display: grid; grid-template-columns: 1fr 520px; height: 100vh; }
+#world { position: relative; overflow: hidden; }
+#scene { width: 100%; height: 100%; display: block; }
+#hud { position: absolute; top: 0; left: 0; right: 0; display: flex; gap: 22px; align-items: baseline;
+  padding: 10px 16px; background: linear-gradient(#000c, #0000); pointer-events: none; }
+.title { color: var(--gold); font-weight: 700; font-size: 22px; }
+#label { font-weight: 700; font-size: 22px; color: #6fe68a; }
+#stats { color: var(--text); margin-left: auto; }
+#event { position: absolute; top: 56px; left: 50%; transform: translateX(-50%); padding: 4px 14px;
+  background: #000d; color: var(--gold); font-weight: 700; font-size: 18px; border-radius: 4px; display: none; }
+#toolbar { position: absolute; left: 12px; bottom: 12px; display: flex; gap: 6px; align-items: center;
+  background: #000a; padding: 7px 9px; border-radius: 8px; flex-wrap: wrap; max-width: calc(100% - 300px); }
+#toolbar button { padding: 4px 8px; font-size: 13px; }
+.tb-title { color: var(--dim); font-weight: 700; margin-right: 2px; }
+.sep { width: 10px; }
+button { font: inherit; color: var(--text); background: #1c1e2e; border: 1px solid #3a3e58; border-radius: 6px;
+  padding: 5px 10px; cursor: pointer; }
+button:hover { background: #262a40; }
+button.on { background: #f59a3c; color: #111; border-color: #f59a3c; }
+button.tool[data-tool=female].on { background: var(--pink); border-color: var(--pink); }
+button.tool[data-tool=predator].on { background: #e04848; border-color: #e04848; }
+button.tool[data-tool=erase].on { background: #aaa; border-color: #aaa; }
+#levels { position: absolute; right: 12px; bottom: 12px; width: 270px; background: #000a; padding: 8px 10px;
+  border-radius: 8px; }
+.lv { display: grid; grid-template-columns: 118px 1fr; gap: 6px; align-items: center; margin: 3px 0; color: var(--dim); }
+.bar { height: 10px; background: #2a2d42; border-radius: 3px; overflow: hidden; }
+.bar > i { display: block; height: 100%; width: 0; }
+#hint { position: absolute; left: 16px; top: 44px; color: #cfd3e6aa; font-size: 12px; pointer-events: none; }
+#panel { background: var(--panel); border-left: 1px solid var(--line); padding: 10px 14px; overflow-y: auto; }
+h2 { font-size: 15px; margin: 10px 0 6px; } h2 small { color: var(--dim); font-weight: 400; font-size: 11px; margin-left: 6px; }
+h2.injury { color: #ff7878; }
+#brainwrap { position: relative; }
+#brain { width: 100%; height: 300px; display: block; background: #07080f; border-radius: 6px; cursor: crosshair; }
+#brainlegend { position: absolute; left: 8px; bottom: 6px; font-size: 11px; color: var(--dim); display: flex; flex-wrap: wrap; gap: 4px 10px; }
+#brainlegend b { display: inline-block; width: 9px; height: 9px; margin-right: 4px; border-radius: 2px; }
+.row { display: flex; gap: 8px; align-items: center; margin: 6px 0; }
+#removed { color: var(--dim); flex: 1; } #removed.hurt { color: var(--red); }
+.heal { background: #1f3a2a; border-color: #3f8a5a; }
+.circ { display: grid; grid-template-columns: 14px 1fr 110px 58px; gap: 8px; align-items: center; padding: 2px 4px;
+  cursor: pointer; border-radius: 4px; font-size: 12.5px; }
+.circ:hover { background: #1e2033; }
+.circ .box { width: 11px; height: 11px; border: 2px solid; border-radius: 2px; }
+.circ.dead { color: var(--red); } .circ.dead .box { background: var(--red); border-color: var(--red); }
+.circ .hz { color: var(--dim); text-align: right; }
+#typebox { flex: 1; font: inherit; color: var(--text); background: #1c1e2e; border: 1px solid #3a3e58; border-radius: 6px; padding: 5px 8px; }
+#typemsg { color: var(--dim); font-size: 12px; min-height: 16px; }
+#injury { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+#injury button { font-size: 12px; padding: 6px 4px; background: #221a26; border-color: #6e4652; color: #f0c8cd; }
+#injury button.on { background: #7a1e26; border-color: #ff6e6e; color: #fff; }
+#injury .note { grid-column: 1 / -1; color: var(--dim); font-size: 11.5px; }
+#credits { color: var(--dim); font-size: 11px; margin-top: 12px; }
+@media (max-width: 1100px) { #app { grid-template-columns: 1fr; grid-template-rows: 60vh auto; } #panel { overflow: visible; } html, body { overflow: auto; } }

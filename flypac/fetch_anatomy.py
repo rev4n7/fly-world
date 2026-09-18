@@ -1,6 +1,7 @@
 """Anatomy layer: real positions for the brain view.
 
 Run:  .venv\\Scripts\\python -m flypac.fetch_anatomy      (needs the neuPrint token)
+      .venv\\Scripts\\python -m flypac.fetch_anatomy --world   (Fly World: data/world/anatomy_footprints.csv)
 
 Writes to data/:
   anatomy_footprints.csv  bodyId, px, py, count: every synapse location of each simulated
@@ -56,7 +57,38 @@ def silhouette(verts):
     return ndimage.binary_fill_holes(m)
 
 
+def fetch_footprints(c, ids, t0):
+    parts = []
+    for i in range(0, len(ids), 40):
+        batch = ids[i:i + 40]
+        df = c.fetch_custom(f"""
+            MATCH (n:Neuron)-[:Contains]->(:SynapseSet)-[:Contains]->(s:Synapse)
+            WHERE n.bodyId IN {batch}
+            RETURN n.bodyId AS bodyId, toInteger(({X_MAX} - s.location.x) / {BIN}) AS px,
+                   toInteger((s.location.y - {Y_MIN}) / {BIN}) AS py, count(*) AS count""")
+        parts.append(df)
+        print(f"  {min(i + 40, len(ids))}/{len(ids)} neurons  ({time.time() - t0:.0f}s)")
+    fp = pd.concat(parts)
+    return fp[(fp.px >= 0) & (fp.px < W) & (fp.py >= 0) & (fp.py < H)]
+
+
+def main_world():
+    """Fly World: footprints for the neurons data/world adds (same grid, meshes and meta as data/)."""
+    t0 = time.time()
+    c = Client(C.SERVER, dataset=C.DATASET, token=load_token())
+    old = pd.read_csv(C.DATA_DIR / "anatomy_footprints.csv")
+    world = pd.read_csv(C.DATA_DIR / "world" / "sim" / "neurons.csv")   # as simulated (flypac.worldbrain)
+    ids = sorted(int(b) for b in set(world.bodyId) - set(old.bodyId) if b > 0)
+    print(f"fetching footprints of {len(ids)} Fly World neurons ...")
+    fp = pd.concat([old[old.bodyId.isin(world.bodyId)], fetch_footprints(c, ids, t0)])
+    fp.to_csv(C.DATA_DIR / "world" / "anatomy_footprints.csv", index=False)
+    print(f"  {fp.bodyId.nunique()} neurons with a footprint, {int(fp['count'].sum())} synapses placed "
+          f"({time.time() - t0:.0f}s)")
+
+
 def main():
+    if "--world" in __import__("sys").argv:
+        return main_world()
     t0 = time.time()
     c = Client(C.SERVER, dataset=C.DATASET, token=load_token())
     meta = {"dataset": C.DATASET, "bin_voxels": BIN, "width": W, "height": H,
@@ -85,18 +117,7 @@ def main():
 
     print("fetching neuron footprints (all synapse positions, binned) ...")
     ids = [int(b) for b in pd.read_csv(C.DATA_DIR / "neurons.csv").bodyId]
-    parts = []
-    for i in range(0, len(ids), 40):
-        batch = ids[i:i + 40]
-        df = c.fetch_custom(f"""
-            MATCH (n:Neuron)-[:Contains]->(:SynapseSet)-[:Contains]->(s:Synapse)
-            WHERE n.bodyId IN {batch}
-            RETURN n.bodyId AS bodyId, toInteger(({X_MAX} - s.location.x) / {BIN}) AS px,
-                   toInteger((s.location.y - {Y_MIN}) / {BIN}) AS py, count(*) AS count""")
-        parts.append(df)
-        print(f"  {min(i + 40, len(ids))}/{len(ids)} neurons  ({time.time() - t0:.0f}s)")
-    fp = pd.concat(parts)
-    fp = fp[(fp.px >= 0) & (fp.px < W) & (fp.py >= 0) & (fp.py < H)]
+    fp = fetch_footprints(c, ids, t0)
     fp.to_csv(C.DATA_DIR / "anatomy_footprints.csv", index=False)
 
     meta["neurons_with_footprint"] = int(fp.bodyId.nunique())

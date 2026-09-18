@@ -54,10 +54,9 @@ class Display:
     Falls back to pygame.SCALED if the SDL2 video module is unavailable (e.g. headless runs).
     """
 
-    def __init__(self, pygame, fullscreen=False):
+    def __init__(self, pygame, fullscreen=False, title="Fly-Pacman - connectome-driven fly (male-cns v1.0)"):
         self.pg = pygame
         self.fullscreen = False
-        title = "Fly-Pacman - connectome-driven fly (male-cns v1.0)"
         try:
             if os.environ.get("SDL_VIDEODRIVER") == "dummy":
                 raise RuntimeError("headless")

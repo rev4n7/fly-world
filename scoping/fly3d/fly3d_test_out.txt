@@ -1,0 +1,9 @@
+healthy flight, empty                    height avg 1.84 end 1.49 | wing power 0.76 | escapes  0.0 caught 0.0 | near female nan | escape up/down +nan | eaten 0.00
+neck cut both (after 3 s)                height avg 0.26 end 0.00 | wing power 0.06 | escapes  0.0 caught 0.0 | near female nan | escape up/down +nan | eaten 0.00
+flight command cells DNg02 removed       height avg 0.26 end 0.00 | wing power 0.06 | escapes  0.0 caught 0.0 | near female nan | escape up/down +nan | eaten 0.00
+30% random cell loss                     height avg 0.98 end 0.36 | wing power 0.39 | escapes  0.0 caught 0.0 | near female nan | escape up/down +nan | eaten 0.00
+predator diving from ABOVE               height avg 1.16 end 1.13 | wing power 0.65 | escapes  2.5 caught 0.5 | near female nan | escape up/down -0.51 | eaten 0.00
+predator coming from BELOW               height avg 2.44 end 2.90 | wing power 0.93 | escapes  3.0 caught 0.0 | near female nan | escape up/down +0.33 | eaten 0.00
+predator above | GF removed              height avg 1.69 end 1.08 | wing power 0.69 | escapes  0.0 caught 0.5 | near female nan | escape up/down +nan | eaten 0.00
+female on the ground                     height avg 0.13 end 0.00 | wing power 0.25 | escapes  0.0 caught 0.0 | near female 0.55 | escape up/down +nan | eaten 0.00
+female on the ground | LC10a removed     height avg 0.91 end 0.00 | wing power 0.52 | escapes  0.0 caught 0.0 | near female 0.10 | escape up/down +nan | eaten 0.00

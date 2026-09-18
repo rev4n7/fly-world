@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fly 3D</title>
+<link rel="stylesheet" href="style.css">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div id="app">
+  <section id="world">
+    <canvas id="scene"></canvas>
+    <header id="hud">
+      <div class="title">FLY 3D</div>
+      <div id="label">loading brain…</div>
+      <div id="stats"></div>
+    </header>
+    <div id="event"></div>
+    <div id="toolbar">
+      <span class="tb-title">PLACE</span>
+      <button data-tool="food" class="tool on">1 Food</button>
+      <button data-tool="female" class="tool">2 Female</button>
+      <button data-tool="predator" class="tool">3 Predator</button>
+      <button data-tool="erase" class="tool">4 Erase</button>
+      <span class="sep"></span>
+      <button id="cam">V: chase camera</button>
+      <button id="pause">Space: pause</button>
+      <button id="fast">F: fast</button>
+      <button id="cleararena">R: clear arena</button>
+    </div>
+    <div id="levels"></div>
+    <div id="hint">click the ground to place · right-click removes · drag to look around (free camera)</div>
+  </section>
+  <aside id="panel">
+    <h2>FLY BRAIN <small>real 3D neuron positions · drag to rotate · click = stroke there</small></h2>
+    <div id="brainwrap"><canvas id="brain"></canvas>
+      <div id="brainlegend"></div>
+    </div>
+    <div class="row">
+      <span id="removed"></span>
+      <button id="heal" class="heal">C: heal everything</button>
+    </div>
+    <h2>BRAIN CONTROL <small>click to remove a circuit (cells + all their synapses)</small></h2>
+    <div id="circuits"></div>
+    <div class="row">
+      <input id="typebox" placeholder="type a cell type or bodyId, Enter = remove/restore" spellcheck="false">
+    </div>
+    <div id="typemsg"></div>
+    <h2 class="injury">INJURY LAB</h2>
+    <div id="injury"></div>
+    <div id="credits"></div>
+  </aside>
+</div>
+<script type="module" src="app.js"></script>
+</body>
+</html>

@@ -32,6 +32,24 @@ FEEDBACK_MIN_IN = 100
 FEEDBACK_MIN_OUT = 100
 JO_MIN_OUT = 5         # JO cell kept if it sends >= this many synapses into the circuit
 
+# --- Fly World additions (flypac/fetch_world.py; evidence in scoping/flyworld/FINDINGS.md) ---
+# Courtship. Names from the dataset's `synonyms` annotation.
+VAB3_PREFIX = "AN09B017"   # vAB3 ascending neurons (Yu 2010, von Philipsborn 2011): leg pheromone taste -> P1
+P1_PREFIX = "pC1"          # pC1/P1 cluster: male-specific fru/dsx courtship-arousal neurons
+SONG_TYPES = ["pIP10"]     # courtship-song command descending neuron (P2b, Kimura 2008)
+TOUCH_MIN_OUT = 20         # leg taste neuron kept if it sends >= this many synapses to vAB3
+COURT_MID_MIN_IN = 100     # middle cell: >= this from vAB3/LC10a (or from pC1, for the song layer) ...
+COURT_MID_MIN_OUT = 100    # ... and >= this onto pC1 (or onto pIP10)
+# Smell. Food / vinegar-attractive glomeruli: DM1 (Or42b) + VA2 (Or92a) (Semmelhack & Wang 2009),
+# DP1m (Ir64a, acid attraction; Ai et al. 2010), DM4 (Or59b) + DM2 (Or22a) (fruit esters).
+FOOD_GLOMERULI = ["DM1", "VA2", "DP1m", "DM4", "DM2"]
+SMELL_PN_MIN_IN = 100      # projection neuron kept if it gets >= this from food-odour ORNs
+SMELL_HOP_MIN = 10         # every hop of a PN -> A -> (B ->) DNa02/DNa03 route must have >= this many synapses
+# Eating. Mouthpart taste neurons (labellum, taste pegs, pharynx) -> MN9 proboscis motor neuron.
+FEED_TYPES = ["MN9"]
+MOUTH_GRN_PREFIXES = ["LB", "claw_tpGRN", "dorsal_tpGRN", "PhG"]
+TASTE_HOP_MIN = 10         # every hop of a taste neuron -> A -> (B ->) MN9 route must have >= this many synapses
+
 # --- synapse sign from predicted neurotransmitter ---
 # Same convention as the Shiu et al. 2024 whole-brain LIF model: ACh excitatory,
 # GABA and glutamate inhibitory (fly CNS glutamate mostly acts via GluCl).

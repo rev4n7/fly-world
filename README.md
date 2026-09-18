@@ -1,8 +1,18 @@
-# Fly-Pacman 🪰
+# Fly World 🪰
 
-### A fruit fly plays Pac-Man by itself, using a brain built from a real fly's wiring diagram.
+### A fruit fly brain built from a real fly's wiring diagram. Watch it play Pac-Man, build a world for it, injure its brain, and watch it fly in 3D.
+
+| | Run it | What it is |
+|---|---|---|
+| 🟡 **Fly-Pacman** | `python -m flypac.game` | the fly plays Pac-Man by itself |
+| 🌍 **Fly World** | `python -m flypac.flyworld_game --demo` | you place food, a female fly and predators; remove brain circuits and injure the brain live |
+| ✈️ **Fly 3D** | `python -m flypac.fly3d_server --demo` | the fly flies in a 3D room in your browser, with a rotatable 3D brain |
+
+![Fly World: the arena on the left, the live brain and brain-control panel on the right](docs/flyworld.png)
 
 ![Fly-Pacman: the maze on the left, the fly's brain lighting up in the middle, its eyes and escape reflex on the right](docs/screenshot.png)
+
+*This project grew out of [Fly-Pacman](https://github.com/rev4n7/fly-pacman). Everything below starts with Fly-Pacman and then covers the new worlds.*
 
 ---
 
@@ -51,8 +61,8 @@ You need **Python 3.10 or newer** ([download it here](https://www.python.org/dow
 
 **1. Download the project**
 ```bash
-git clone https://github.com/rev4n7/fly-pacman.git
-cd fly-pacman
+git clone https://github.com/rev4n7/fly-world.git
+cd fly-world
 ```
 (Or click the green **Code** button on this page → **Download ZIP** → unzip it, then open a terminal in that folder.)
 
@@ -72,6 +82,71 @@ python -m flypac.game
 A window opens and the fly starts playing. The brain data is already included, so **you don't need any account**.
 
 **Controls:** `Space` pause · `F` fast-forward · `W` fullscreen · `+` / `-` faster / slower ghosts · `1`–`4` number of ghosts · `R` restart · `Esc` quit
+
+---
+
+## New: Fly World 🌍 (sandbox)
+
+An open arena instead of a maze. **You** place things, and the fly reacts using the same real-brain simulation:
+
+```bash
+python -m flypac.flyworld_game --demo
+```
+
+- **Click to place:** `1` 🍊 food · `2` 🪰 a female fly · `3` 🕷️ a predator · `4` erase (right click also removes).
+- **Remove parts of the brain live:** click a circuit in the right-hand panel (e.g. *Giant Fiber*, *Female-chase eyes (LC10a)*, *Proboscis motor neuron MN9*). The cells and **every connection to and from them** are taken out of the running network. Press `T` to remove any cell type by name or ID, and `C` to restore everything.
+
+What you can try:
+
+| Try this | What happens |
+|---|---|
+| Place a female | its chase cells (LC10a) steer the fly after her |
+| Remove **LC10a**, then place a female | it ignores her, but still eats and still escapes |
+| Place a predator | the Giant Fiber fires and the fly jumps away |
+| Remove the **Giant Fiber** | it keeps eating or chasing while the predator catches it |
+| Place food | when the fly walks onto it, taste cells fire the proboscis neuron (MN9) and it stops to eat |
+| Remove **MN9** | it walks straight over food |
+
+### Injury lab 🩹
+
+Damage the fly's brain the way an accident or illness damages a person's, and watch what changes (bottom right of the Fly World window):
+
+| Button | Human comparison | What the fly does |
+|---|---|---|
+| **Neck cut: both** | spinal cord injury | the brain still sends commands, but they never reach the body: the fly can't move or escape, yet still eats food under its mouth |
+| **Left / Right half** | injury on one side | walks at half speed |
+| **Click the brain picture** | stroke | destroys the real cells at that spot. On the left eye area, the fly stops noticing things on its left |
+| **Lose 10% / 30% cells** | diffuse brain injury | gets clumsier, loses track of the female |
+| **Slow decline** | degenerative disease | cells die off over minutes and skills fade |
+| **All synapses weaker** | general weakening | slower, less responsive |
+| **Brakes weaker** | epilepsy-like | the brain's "stop" signals weaken, and a trigger (like a female) can set off a seizure: runaway activity and spasms |
+
+`C` heals everything. Memory problems aren't possible yet (the model doesn't learn), and dyslexia has no honest fly equivalent.
+
+No behaviour is scripted. Removing a neuron changes behaviour only because the signal can no longer travel through the network.
+
+**Honest limits of Fly World** (details in [scoping/flyworld/FINDINGS.md](scoping/flyworld/FINDINGS.md)):
+- **Smell can't steer the fly.** The fly smells food (the smell cells light up), but in this wiring the smell signal doesn't reach the steering cells with any left/right information. So the fly finds food by wandering, not by following the smell.
+- **Courtship stops at chasing.** Touching the female doesn't switch on the "courtship arousal" (P1) cells. The dataset predicts that the relay cell carrying the female's scent uses a chemical this model treats as a brake. So the fly chases her but rarely "sings".
+- **Taste cells aren't labelled as sweet or bitter.** Food activates the three taste-cell types whose own wiring drives eating.
+- Fly World simulates **4,094 real neurons and 3.56 million synapses**, selected by the same synapse-count rules as Fly-Pacman.
+
+---
+
+## New: Fly 3D ✈️ (flying, in your browser)
+
+The same real-wiring brain, now **flying in 3D**, with a **rotatable 3D brain** built from 957,000 real synapse positions.
+
+```bash
+python -m flypac.fly3d_server --demo
+```
+
+Your browser opens at `http://127.0.0.1:8765`. The world is a closed room (4 walls and a ceiling). Everything from Fly World works here too: place things by clicking the ground, remove circuits, and use the injury lab. **Click the 3D brain to cause a stroke at that exact spot.**
+
+- **Flying comes from real wiring:** the flight command cells (DNg02) drive the real wing power motor neurons. Cut the neck or remove DNg02 and the fly falls out of the sky.
+- **Escapes are 3D:** a predator diving from above sends the fly down and away, and one from below sends it up. This works because the eye cells have real up/down positions.
+- **It lands to chase a female** on the ground, using the elevation of its female-chase eye cells.
+- **Limits:** holding its height uses a design rule (real flies do it with motion vision, which isn't simulated yet), and the fly keeps a little "keep flying" drive while airborne. Details: [scoping/fly3d/FINDINGS.md](scoping/fly3d/FINDINGS.md).
 
 ---
 
@@ -118,6 +193,7 @@ Being honest about this matters.
   - Weight = synapse count × 0.275 mV × sign, where the sign comes from the predicted neurotransmitter (ACh +, GABA/Glu −).
   - Constants from Shiu et al. 2024.
 - **Game and display:** `flypac/world.py`, `flypac/maze.py`, `flypac/game.py`, `flypac/brainview.py` (pygame).
+- **Fly World:** `flypac/fetch_world.py` (data: courtship vAB3→pC1/P1→pIP10, food-odour ORNs→PNs, taste→MN9, per-circuit feedback layers), `flypac/worldbrain.py` (senses + ablation), `flypac/flyworld.py` (arena logic), `flypac/flyworld_game.py` (UI). Regenerate with `python -m flypac.fetch_world` then `python -m flypac.fetch_anatomy --world`.
 - **Regenerating the data** requires a free [neuPrint](https://neuprint.janelia.org) token in a `.env` file (`NEUPRINT_APPLICATION_CREDENTIALS=...`), then:
   - `python -m flypac.fetch`
   - `python -m flypac.fetch_anatomy`

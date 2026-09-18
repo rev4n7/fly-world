@@ -15,3 +15,7 @@ frames/
 
 # large scratch files
 scoping/*.obj
+
+# Fly World: regenerated from data/world by flypac.worldbrain
+data/world/sim/
+data/fly3d/sim/

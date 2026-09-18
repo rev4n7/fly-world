@@ -6,6 +6,7 @@ W_SYN * synapse_count * NT sign, Poisson-driven sensory neurons.
 
 Pieces that are NOT connectome data are marked "DESIGN" and collected in SENSE/MOTOR.
 """
+from collections import deque
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -102,13 +103,15 @@ def mirror_hearing(neurons, edges):
 class Brain:
     seed: int = 0
     exclude_lc_recurrence: bool = False
+    data_dir: object = None            # folder with neurons.csv / edges.csv (default: data/)
     neurons: pd.DataFrame = field(init=False)
     rng: np.random.Generator = field(init=False)
 
     def __post_init__(self):
         self.rng = np.random.default_rng(self.seed)
-        n = pd.read_csv(C.DATA_DIR / "neurons.csv").set_index("bodyId")
-        e = pd.read_csv(C.DATA_DIR / "edges.csv")
+        d = self.data_dir or C.DATA_DIR
+        n = pd.read_csv(d / "neurons.csv").set_index("bodyId")
+        e = pd.read_csv(d / "edges.csv")
         n, e = mirror_hearing(n, e)
         if self.exclude_lc_recurrence:
             vis = set(n.index[n.role.isin(["sense_looming", "sense_pursuit"])])
@@ -152,6 +155,8 @@ class Brain:
         self.t = 0.0
         self.delay_steps = int(round(T_DLY / DT))
         self.buf = [np.zeros(0, dtype=int) for _ in range(self.delay_steps)]
+        # spikes of the last few 0.1 ms steps: the only cells that can still be refractory
+        self.recent = deque(maxlen=int(np.ceil(T_REF / DT)) + 2)
         self.rates = np.zeros(self.N)      # smoothed Hz, every neuron (for the side panel)
         self.input_rate = np.zeros(self.N)
 
@@ -200,7 +205,66 @@ class Brain:
 
     # ------------------------------------------------------------------ dynamics
     def step(self, duration):
-        """Advance the network; returns spike counts per neuron over `duration` seconds."""
+        """Advance the network; returns spike counts per neuron over `duration` seconds.
+
+        Same model as step_reference() (identical spikes for the same seed), organised for speed:
+        spike propagation is vectorised, and only cells that fired within the last refractory
+        period are checked for refractoriness instead of all N cells every 0.1 ms.
+        """
+        if ADAPT_B:
+            return self.step_reference(duration)
+        n_steps = max(1, int(round(duration / DT)))
+        N = self.N
+        counts = np.zeros(N, dtype=np.int32)
+        driven = np.flatnonzero(self.input_rate > 0)
+        hits = self.rng.random((n_steps, len(driven))) < (self.input_rate[driven] * DT) if len(driven) else None
+        w_in = F_POI * W_SYN
+        decay = np.exp(-DT / TAU_SYN)
+        leak = DT / T_MBR
+        indptr, indices, data = self.W.indptr, self.W.indices, self.W.data
+        v, g, ref_until = self.v, self.g, self.ref_until
+        recent = self.recent
+        dv = np.empty(N)
+        for step in range(n_steps):
+            sp = self.buf.pop(0)
+            if len(sp):
+                if len(sp) == 1:
+                    j = sp[0]
+                    lo, hi = indptr[j], indptr[j + 1]
+                    g[indices[lo:hi]] += data[lo:hi]      # a column has no repeated rows
+                else:
+                    starts = indptr[sp]
+                    lens = indptr[sp + 1] - starts
+                    sl = np.repeat(starts - np.cumsum(lens) + lens, lens) + np.arange(lens.sum())
+                    g += np.bincount(indices[sl], weights=data[sl], minlength=N)
+            if hits is not None:
+                g[driven[hits[step]]] += w_in
+            np.subtract(v, V_REST, out=dv)
+            np.subtract(g, dv, out=dv)                    # dv = g - (v - V_REST)
+            dv *= leak
+            cand = [r for r in recent if len(r)]
+            if cand:
+                cand = np.concatenate(cand)
+                dv[cand[self.t < ref_until[cand]]] = 0.0  # refractory cells don't integrate
+            v += dv
+            g *= decay
+            spk = np.flatnonzero(v >= V_TH)
+            if len(spk):
+                v[spk] = V_REST
+                ref_until[spk] = self.t + T_REF
+                counts[spk] += 1
+            recent.append(spk)
+            self.buf.append(spk)
+            self.t += DT
+        # Flush decayed synaptic input to exactly 0. Left alone, silent cells' g decays into subnormal
+        # floats (< 1e-308), which x86 CPUs process ~100x slower (a quiet brain ran 8x slower).
+        g[np.abs(g) < 1e-9] = 0.0
+        a = 1 - np.exp(-duration / MOTOR["rate_tau"])
+        self.rates += a * (counts / duration - self.rates)
+        return counts
+
+    def step_reference(self, duration):
+        """Straightforward version of step() (kept for checking and for ADAPT_B experiments)."""
         n_steps = max(1, int(round(duration / DT)))
         N = self.N
         counts = np.zeros(N, dtype=np.int32)
@@ -242,6 +306,9 @@ class Brain:
                     self.adapt[spk] += ADAPT_B
             self.buf.append(spk)
             self.t += DT
+        # Flush decayed synaptic input to exactly 0. Left alone, silent cells' g decays into subnormal
+        # floats (< 1e-308), which x86 CPUs process ~100x slower (a quiet brain ran 8x slower).
+        g[np.abs(g) < 1e-9] = 0.0
         a = 1 - np.exp(-duration / MOTOR["rate_tau"])
         self.rates += a * (counts / duration - self.rates)
         return counts
