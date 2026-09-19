@@ -5,7 +5,7 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
   font: 14px/1.35 ui-monospace, Consolas, "DejaVu Sans Mono", monospace; overflow: hidden; }
-#app { display: grid; grid-template-columns: 1fr 520px; height: 100vh; }
+#app { --panel-w: 520px; display: grid; grid-template-columns: 1fr var(--panel-w); height: 100vh; }
 #world { position: relative; overflow: hidden; }
 #scene { width: 100%; height: 100%; display: block; }
 #hud { position: absolute; top: 0; left: 0; right: 0; display: flex; gap: 22px; align-items: baseline;
@@ -37,7 +37,14 @@ button.tool[data-tool=erase].on { background: #aaa; border-color: #aaa; }
 h2 { font-size: 15px; margin: 10px 0 6px; } h2 small { color: var(--dim); font-weight: 400; font-size: 11px; margin-left: 6px; }
 h2.injury { color: #ff7878; }
 #brainwrap { position: relative; }
-#brain { width: 100%; height: 300px; display: block; background: #07080f; border-radius: 6px; cursor: crosshair; }
+#brain { width: 100%; height: min(calc(var(--panel-w) * 0.85), 72vh); display: block; background: #07080f; border-radius: 6px; cursor: crosshair; }
+#braintools { position: absolute; top: 8px; right: 8px; display: flex; gap: 4px; align-items: center; z-index: 21; }
+#braintools button { font-size: 12px; padding: 3px 8px; background: #1c1e2ecc; }
+#brainsize { color: var(--dim); font-size: 11px; min-width: 34px; text-align: center; }
+/* enlarged: the brain covers the 3D world, the control panel stays usable on the right */
+#brainwrap.big { position: fixed; left: 0; top: 0; width: calc(100vw - var(--panel-w)); height: 100vh; z-index: 20; }
+#brainwrap.big #brain { height: 100%; border-radius: 0; }
+#brainwrap.big #brainlegend { font-size: 13px; bottom: 14px; left: 14px; }
 #brainlegend { position: absolute; left: 8px; bottom: 6px; font-size: 11px; color: var(--dim); display: flex; flex-wrap: wrap; gap: 4px 10px; }
 #brainlegend b { display: inline-block; width: 9px; height: 9px; margin-right: 4px; border-radius: 2px; }
 .row { display: flex; gap: 8px; align-items: center; margin: 6px 0; }

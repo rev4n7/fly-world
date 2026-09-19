@@ -38,8 +38,14 @@
     <div id="hint">click the ground to place · right-click removes · drag to look around (free camera)</div>
   </section>
   <aside id="panel">
-    <h2>FLY BRAIN <small>real 3D neuron positions · drag to rotate · click = stroke there</small></h2>
+    <h2>FLY BRAIN <small>real 3D neuron positions · drag to rotate · scroll to zoom · click = stroke there</small></h2>
     <div id="brainwrap"><canvas id="brain"></canvas>
+      <div id="braintools">
+        <button id="brainminus" title="- : smaller brain panel">− smaller</button>
+        <span id="brainsize"></span>
+        <button id="brainplus" title="+ : bigger brain panel">+ bigger</button>
+        <button id="bigbrain" title="B: brain full screen / back">⤢ full screen (B)</button>
+      </div>
       <div id="brainlegend"></div>
     </div>
     <div class="row">

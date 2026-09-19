@@ -204,17 +204,59 @@ async function loadBrain() {
   geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
   bColors = new Float32Array(n * 3);
   geo.setAttribute("color", new THREE.BufferAttribute(bColors, 3));
-  bPoints = new THREE.Points(geo, new THREE.PointsMaterial({ size: 1.6, vertexColors: true }));
+  const dot = document.createElement("canvas"); dot.width = dot.height = 32;       // round dots, not squares
+  const dg = dot.getContext("2d"); dg.fillStyle = "#fff"; dg.beginPath(); dg.arc(16, 16, 15, 0, Math.PI * 2); dg.fill();
+  bPoints = new THREE.Points(geo, new THREE.PointsMaterial({ size: 2.0, vertexColors: true,
+    map: new THREE.CanvasTexture(dot), alphaTest: 0.5 }));
   bscene.add(bPoints);
-  geo.computeBoundingBox();
-  const bb = geo.boundingBox, c = bb.getCenter(new THREE.Vector3()), sz = bb.getSize(new THREE.Vector3());
-  borbit.target.copy(c);
-  bcam.position.set(c.x, c.y, c.z + Math.max(sz.x, sz.y) * 1.25);
+  // frame the brain itself: the 3rd-97th percentile of point positions, which leaves out the sparse
+  // body (VNC) cells hanging far below the head and would otherwise shrink the brain in the view
+  const pct = (arr, q) => arr[Math.floor(q * (arr.length - 1))];
+  const xs = [], ys = [], zs = [];
+  for (let i = 0; i < n; i++) { xs.push(pos[3 * i]); ys.push(pos[3 * i + 1]); zs.push(pos[3 * i + 2]); }
+  [xs, ys, zs].forEach((a) => a.sort((p, q) => p - q));
+  brainBox = { lo: [pct(xs, 0.03), pct(ys, 0.03), pct(zs, 0.03)], hi: [pct(xs, 0.97), pct(ys, 0.97), pct(zs, 0.97)] };
+  frameBrain();
   $("brainlegend").innerHTML = LEGEND.map(([t, r]) => `<span><b style="background:rgb(${ROLE_COLORS[r]})"></b>${t}</span>`).join("")
     + `<span><b style="background:#c21a1a"></b>removed</span>`;
   $("credits").textContent = `Real wiring: male-cns v1.0 (neuPrint). ${B.n.toLocaleString()} neurons, `
     + `${(B.synapses / 1e6).toFixed(2)}M synapses. Design choices: sensor gains, motor/flight map, world.`;
 }
+
+let brainBox = null;
+function frameBrain() {
+  if (!brainBox) return;
+  const { lo, hi } = brainBox;
+  const c = new THREE.Vector3((lo[0] + hi[0]) / 2, (lo[1] + hi[1]) / 2, (lo[2] + hi[2]) / 2);
+  const w = hi[0] - lo[0], h = hi[1] - lo[1], t = Math.tan(THREE.MathUtils.degToRad(bcam.fov / 2));
+  const d = Math.max(h / 2 / t, w / 2 / (t * bcam.aspect)) * 1.08;
+  borbit.target.copy(c);
+  bcam.position.set(c.x, c.y, c.z + d);
+  bcam.lookAt(c);
+}
+function toggleBigBrain() {
+  const wrap = $("brainwrap");
+  const big = wrap.classList.toggle("big");
+  $("bigbrain").textContent = big ? "⤡ back (B)" : "⤢ full screen (B)";
+  // full screen: the side panel drops to its normal width so the brain gets the most room
+  if (big) { $("app").style.setProperty("--panel-w", "520px"); resize(); frameBrain(); }
+  else setBrainSize(panelStep);
+}
+$("bigbrain").onclick = (e) => { e.stopPropagation(); toggleBigBrain(); };
+// brain panel size: 5 steps; the choice is remembered in this browser (a convenience only)
+const PANEL_W = [420, 520, 660, 820, 1000];
+let panelStep = 1;
+try { const saved = +localStorage.getItem("fly3d-brain-size"); if (saved >= 0 && saved < PANEL_W.length) panelStep = saved; } catch (e) {}
+function setBrainSize(step) {
+  if ($("brainwrap").classList.contains("big")) toggleBigBrain();   // resizing leaves full screen
+  panelStep = Math.max(0, Math.min(PANEL_W.length - 1, step));
+  $("app").style.setProperty("--panel-w", `${Math.min(PANEL_W[panelStep], innerWidth - 360)}px`);
+  $("brainsize").textContent = `${panelStep + 1}/${PANEL_W.length}`;
+  try { localStorage.setItem("fly3d-brain-size", panelStep); } catch (e) {}
+  resize(); frameBrain();
+}
+$("brainminus").onclick = (e) => { e.stopPropagation(); setBrainSize(panelStep - 1); };
+$("brainplus").onclick = (e) => { e.stopPropagation(); setBrainSize(panelStep + 1); };
 
 function updateBrainColors(rates, alive) {
   if (!bPoints) return;
@@ -321,6 +363,9 @@ addEventListener("keydown", (e) => {
   else if (k === "f") api("fast");
   else if (k === "r") api("clear_arena");
   else if (k === "c") api("heal");
+  else if (k === "b") toggleBigBrain();
+  else if (k === "-" || k === "_") setBrainSize(panelStep - 1);
+  else if (k === "=" || k === "+") setBrainSize(panelStep + 1);
   else if (k === "t") { e.preventDefault(); $("typebox").focus(); }
 });
 
@@ -412,4 +457,9 @@ function animate() {
 }
 
 resize();
-loadBrain().then(() => { poll(); animate(); });
+addEventListener("resize", frameBrain);
+loadBrain().then(() => {
+  setBrainSize(panelStep);
+  if (new URLSearchParams(location.search).get("brain") === "big") toggleBigBrain();   // ?brain=big opens enlarged
+  poll(); animate();
+});

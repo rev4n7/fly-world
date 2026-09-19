@@ -139,7 +139,7 @@ The same real-wiring brain, now **flying in 3D**, with a **rotatable 3D brain** 
 python -m flypac.fly3d_server --demo
 ```
 
-Your browser opens at `http://127.0.0.1:8765`. The world is a closed room (4 walls and a ceiling). Everything from Fly World works here too: place things by clicking the ground, remove circuits, and use the injury lab. **Click the 3D brain to cause a stroke at that exact spot.**
+Your browser opens at `http://127.0.0.1:8765`. The world is a closed room (4 walls and a ceiling). Everything from Fly World works here too: place things by clicking the ground, remove circuits, and use the injury lab. **Click the 3D brain to cause a stroke at that exact spot.** Make the brain as big as you like: **− / +** buttons (or the `-` / `+` keys) step it through 5 sizes, **B** makes it full screen, and scrolling zooms in.
 
 - **Flying comes from real wiring:** the flight command cells (DNg02) drive the real wing power motor neurons. Cut the neck or remove DNg02 and the fly falls out of the sky.
 - **Escapes are 3D:** a predator diving from above sends the fly down and away, and one from below sends it up. This works because the eye cells have real up/down positions.
