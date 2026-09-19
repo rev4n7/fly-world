@@ -1,10 +1,8 @@
 """Injury lab self-test: each injury vs healthy, headless (3 seeds x 20 s)."""
 import numpy as np
 from flypac.flyworld import FlyWorld, WORLD_W, WORLD_H, SEIZURE_FRAC
-from flypac.injury import BrainMap
 
 C = (WORLD_W / 2, WORLD_H / 2)
-_map = {}
 
 def run(label, spawns, injure=lambda w: None, T=20.0, seeds=(0, 1, 2)):
     res = []
@@ -28,13 +26,6 @@ def run(label, spawns, injure=lambda w: None, T=20.0, seeds=(0, 1, 2)):
     print(f"{label:44s} speed {m[0]:4.2f} turnbias {m[1]:+6.1f} jumps {m[2]:4.1f} caught {m[3]:3.1f} "
           f"eaten {m[4]:4.2f} near-fem {m[5]:.2f} seizure {m[6]:4.1f}s lost {m[7]:.0f}", flush=True)
 
-def stroke_at(label_name, r=12, dx=0):
-    def f(w):
-        bm = _map.setdefault("m", BrainMap(w.brain))
-        px, py = bm.labels[label_name]
-        w.stroke(bm.cells_in_disc(px + dx, py, r))
-    return f
-
 fem_L = [("female", (C[0] + 4, C[1] - 4))]   # fly starts facing +x; -y is its left
 fem_R = [("female", (C[0] + 4, C[1] + 4))]
 pred = [("predator", (C[0] + 8, C[1]))]
@@ -55,5 +46,4 @@ run("brakes 20% strength, empty", [], lambda w: w.set_gains(inh_gain=0.2))
 run("brakes 20% strength, female", fem_R, lambda w: w.set_gains(inh_gain=0.2))
 run("healthy, female on LEFT", fem_L)
 run("left eye removed, female on LEFT", fem_L, lambda w: w.toggle_circuit("eyeL"))
-run("stroke at left lobula, female on LEFT", fem_L, stroke_at("lobula"))
 run("left eye removed, female on RIGHT", fem_R, lambda w: w.toggle_circuit("eyeL"))

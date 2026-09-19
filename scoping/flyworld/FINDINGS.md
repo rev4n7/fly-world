@@ -97,3 +97,6 @@ Walking speed now comes from DNa02 L+R activity (resting ~10 Hz = normal walk), 
   A 64 um stroke on the left lobula kills most left visual cells (100 LC10a, 94 LPLC2, 66 LC4...).
 - **Left eye removed:** ignores a female on its left (5% vs 67%).
 - Not simulated: memory (no learning in the model yet), dyslexia (no honest fly equivalent).
+
+## 2026-09-19: 2D window removed
+The 2D pygame Fly World (`flyworld_game.py`, `injury.py`, `data/world/anatomy_footprints.csv`) was removed at the user's request. Its world logic (`flypac/flyworld.py`) lives on inside Fly 3D (`flypac/fly3d.py`), and 3D strokes use real 3D synapse positions (`Brain3DMap`). The 2D stroke results above are kept as a record.

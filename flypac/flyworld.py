@@ -101,7 +101,7 @@ class FlyWorld:
         self.types, self.roles = n.type.fillna("").to_numpy(), n.role.to_numpy()
         self.sides = n.side.fillna("").to_numpy()
         self.circuit_idx = {key: self._match(m) for key, _, _, m in CIRCUITS}
-        # injury lab state (strokes at a brain spot: flypac/injury.py)
+        # injury lab state (3D strokes at a clicked brain spot: flypac/fly3d_server.py Brain3DMap)
         self.superclass = n.superclass.fillna("").to_numpy() if "superclass" in n else np.array([""] * len(n))
         self.not_sensory = ~np.char.startswith(self.roles.astype(str), "sense")
         self.dn = {s: np.flatnonzero((self.superclass == "descending_neuron") & (self.sides == s)) for s in "LR"}

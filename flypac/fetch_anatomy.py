@@ -72,23 +72,7 @@ def fetch_footprints(c, ids, t0):
     return fp[(fp.px >= 0) & (fp.px < W) & (fp.py >= 0) & (fp.py < H)]
 
 
-def main_world():
-    """Fly World: footprints for the neurons data/world adds (same grid, meshes and meta as data/)."""
-    t0 = time.time()
-    c = Client(C.SERVER, dataset=C.DATASET, token=load_token())
-    old = pd.read_csv(C.DATA_DIR / "anatomy_footprints.csv")
-    world = pd.read_csv(C.DATA_DIR / "world" / "sim" / "neurons.csv")   # as simulated (flypac.worldbrain)
-    ids = sorted(int(b) for b in set(world.bodyId) - set(old.bodyId) if b > 0)
-    print(f"fetching footprints of {len(ids)} Fly World neurons ...")
-    fp = pd.concat([old[old.bodyId.isin(world.bodyId)], fetch_footprints(c, ids, t0)])
-    fp.to_csv(C.DATA_DIR / "world" / "anatomy_footprints.csv", index=False)
-    print(f"  {fp.bodyId.nunique()} neurons with a footprint, {int(fp['count'].sum())} synapses placed "
-          f"({time.time() - t0:.0f}s)")
-
-
 def main():
-    if "--world" in __import__("sys").argv:
-        return main_world()
     t0 = time.time()
     c = Client(C.SERVER, dataset=C.DATASET, token=load_token())
     meta = {"dataset": C.DATASET, "bin_voxels": BIN, "width": W, "height": H,
